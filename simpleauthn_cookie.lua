@@ -66,10 +66,14 @@ local function get_current_url ()
     return ngx.escape_uri(ngx.var.scheme .. "://" .. ngx.var.http_host .. ngx.var.request_uri)
 end
 
+local function get_auth_url ()
+    return string.format(auth_url_fmt, "next=" .. get_current_url())
+end
+
 local function access (...)
     uid = get_uid(...)
     if uid == nil then
-        ngx.header['Location'] = string.format(auth_url_fmt, "next=" .. get_current_url())
+        ngx.header['Location'] = get_auth_url()
         ngx.exit(ngx.HTTP_MOVED_TEMPORARILY)
     end
 end
@@ -79,6 +83,7 @@ local P = {
     set_max_age = set_max_age,
     set_cookie = set_cookie,
     set_hash_func = set_hash_func,
+    get_auth_url = get_auth_url,
     get_uid = get_uid,
     access = access
 }

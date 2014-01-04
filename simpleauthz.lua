@@ -64,7 +64,7 @@ local function access (rule_name, uid)
     if action then
         -- rule action == "allow"
         if roles[uid] and not except_roles[uid] then
-            ngx.exit(ngx.HTTP_OK)
+            return
         end
         ngx.exit(ngx.HTTP_FORBIDDEN)
     else
@@ -72,8 +72,21 @@ local function access (rule_name, uid)
         if roles[uid] and not except_roles[uid] then
             ngx.exit(ngx.HTTP_FORBIDDEN)
         end
-        ngx.exit(ngx.HTTP_OK)
+        return
     end
+end
+
+local function access_with_authn(rule_name, get_uid, auth_url, ...)
+    uid = get_uid(...)
+
+    if uid == nil then
+        -- need authn
+        ngx.header['Location'] = auth_url
+        ngx.exit(ngx.HTTP_MOVED_TEMPORARILY)
+    end
+
+    -- authn successed
+    return access(rule_name, uid)
 end
 
 -- special rules to allow/deny all (logged in) users
@@ -83,7 +96,8 @@ create_rule ('DENY_ALL', 'allow', {}, {})
 local P = {
     create_group = create_group,
     create_rule = create_rule,
-    access = access
+    access = access,
+    access_with_authn = access_with_authn
 }
 
 return P
