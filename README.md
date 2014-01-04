@@ -90,7 +90,7 @@ Use ldap authn backend, require simple uid/group based access control
                  simpleauthn = require "simpleauthn_cookie"
                  simpleauthn.set_secret_key("your-secret")
                  simpleauthn.set_max_age(3600)
-                 simpleauthn.set_auth_url_fmt('/auth/?%s')
+                 simpleauthn.set_auth_url_fmt("/auth/?%s")
                 ';
 
     server {
