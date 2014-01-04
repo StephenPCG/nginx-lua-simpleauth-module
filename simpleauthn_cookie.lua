@@ -82,6 +82,7 @@ local P = {
     set_secret_key = set_secret_key,
     set_max_age = set_max_age,
     set_cookie = set_cookie,
+    set_auth_url_fmt = set_auth_url_fmt,
     set_hash_func = set_hash_func,
     get_auth_url = get_auth_url,
     get_uid = get_uid,
