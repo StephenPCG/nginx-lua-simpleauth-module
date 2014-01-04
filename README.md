@@ -4,15 +4,15 @@
 
 For those who already has the knowledge, just skip this part.
 
-A typical permission has two stage of auth, authentication which identifies a valid user
-(has account in the system), and authorization which identifies if the user has permission
+A typical permission system has two stage of auth, `authentication` which identifies a valid user
+(has account in the system), and `authorization` which identifies if the user has permission
 to access the given app.
 
-### What and why these two module?
+### What are and why these two module?
 
 #### simpleauthn_cookie.lua
 
-This is not a real authn module, but just a cache powered by Cookie. Some times, it is too
+This is not a real authn module, but just a cache powered by Cookie. Sometimes it is too
 heavy to request authn module for each request, say, you are using an LDAP authn module, you
 may wish to cache the authn result in Cookie, and check directly in nginx to avoid heavy traffic
 to LDAP server.
@@ -137,6 +137,6 @@ Use ldap authn backend, require simple uid/group based access control
 
 ## TODO
 
-* Create a lua ldap authn module. The [nginx-ldap-module](git://github.com/kvspb/nginx-auth-ldap.git) is not shipped with nginx
+* Create a lua ldap authn module. The [nginx-ldap-module](https://github.com/kvspb/nginx-auth-ldap) is not shipped with nginx
   official release tarbal, we have to compile nginx by hand. If there is a pure lua ldap authn module, no compilation is needed.
 
