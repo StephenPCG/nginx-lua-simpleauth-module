@@ -1,3 +1,30 @@
+-- This module provides a very simple uid list/group based authorization.
+-- On nginx init, you can setup some groups (groups are just alias of list of uids) and rules.
+--
+-- Items of groups can also be groups, e.g:
+--   create_group('group1', 'alice', 'bob')             -- group1 contains: alice, bob
+--   create_group('group2', 'tom', 'jerry', '@group1')  -- group2 contains: tom, jerry, alice, bob
+--
+-- A rule has the following properties:
+--   name          any valid string
+--   action:       action can be "allow" or "deny"
+--   roles         a list of uids or groups (group names are prefixed with "@")
+--   except_roles  a list of uids or groups (group names are prefiexd with @)
+-- The authz logic are (assume action == "allow"):
+--   if (current_uid in roles) and not (current_uid in except_roles) then
+--      the user is allowed
+--   else
+--      the user is denied
+--   end
+--
+-- NOTE: this module does not provide authentication method by any means, it will just trust
+-- any uid passwd in, e.g. you can do:
+--   access_by_lua 'simpleauthz.access(rule1, ngx.var.arg_uid)';
+--   access_by_lua 'simpleauthz.access(rule1, ngx.var.remote_user)';
+--
+-- access_with_authn() accept a function param to retrieve uid, so you can use other complicated
+-- authn method along with this authz module.
+
 local groups = {}
 local rule_actions = {}
 local rule_roles = {}
@@ -5,6 +32,7 @@ local rule_except_roles = {}
 
 local function expand_roles (roles)
     -- recursively expand list of group names and uids to a list of pure uids
+
     local ret = {}
     for k, v in pairs(roles) do
         if type(k) == "string" then
@@ -46,7 +74,7 @@ end
 
 local function access (rule_name, uid)
     -- do authz process, be invoked by access_by_lua:
-    --   access_by_lua 'simpleauthz.auth(rule_name, uid)';
+    --   access_by_lua 'simpleauthz.access(rule_name, ngx.var.remote_user)';
 
     if uid == nil then
         ngx.exit(ngx.HTTP_FORBIDDEN)
@@ -77,6 +105,9 @@ local function access (rule_name, uid)
 end
 
 local function access_with_authn(rule_name, get_uid, auth_url, ...)
+    -- get_uid() is a function which will return the current uid
+    -- if uid == nil, user will be redirected to auth_url for authn, and hope auth_url will redirect back.
+
     uid = get_uid(...)
 
     if uid == nil then

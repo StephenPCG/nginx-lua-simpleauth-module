@@ -1,7 +1,20 @@
+-- This module provides a very simple Cookie based authentication (cache).
+-- Note: This module does not do any real authentication, it is only useful for caching
+-- authentication results. Say, if you are using nginx-ldap-auth module, you do not wish the
+-- server to query ldap for each request, you can cache the authentication result in Cookie.
+--
+-- There are several options to make the authn stronger.
+--   secret_key: a secret_key to protect bad user from forging fake authentication hash.
+--   max_age:    how long the authn will be valid, in second
+--   hash_func:  a function receives a string and output a digest string which will be stored
+--               in user browser.
+--   auth_url_fmt: it is used to jump to real auth method on authn fail.
+
 local secret_key = 'please call simpleauthn.set_secret_key() to change this key!'
 local max_age = 60 * 60 * 24
 local auth_url_fmt = '/auth/?%s'
 local hash_func = ngx.md5
+-- TODO local refresh = false
 
 local function set_secret_key (key)
     secret_key = key
@@ -63,6 +76,7 @@ local function get_uid (...)
 end
 
 local function get_current_url ()
+    -- return the escaped current url, for redirecting
     return ngx.escape_uri(ngx.var.scheme .. "://" .. ngx.var.http_host .. ngx.var.request_uri)
 end
 
@@ -71,6 +85,9 @@ local function get_auth_url ()
 end
 
 local function access (...)
+    -- do simple authz process, all 'logged in' will be authorized, 'non-logged in' user will
+    -- be redirected to auth_url.
+    --   access_by_lua 'simpleauthn.access()';
     uid = get_uid(...)
     if uid == nil then
         ngx.header['Location'] = get_auth_url()
